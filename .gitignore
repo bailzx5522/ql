@@ -1,0 +1,5 @@
+build/
+dist/
+ql.egg-info/
+*.pyc
+*.log
