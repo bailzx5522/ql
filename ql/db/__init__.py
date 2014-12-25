@@ -4,52 +4,117 @@ from sqlalchemy import (ForeignKey, Column, Integer, String, DateTime, Float)
 
 Base = declarative_base()
 
-class Exchange(Base):
-	"""
-	id
-	abbrev: short name
-	name
-	city
-	country
-	type: stock/foreign exchange/so on...
-	describe
-	created_date
-	last_updated_date
-	"""
-	__tablename__ = "exchange"
+class Symbol(Base):
+    """
+    create table symbol (
+        id integer AUTO_INCREMENT,
+        abbrev varchar(36),
+        name varchar(36),
+        type varchar(36),
+        description varchar(255),
+        created_date date,
+        PRIMARY KEY (id));
+    """
+    __tablename__ = "symbol"
 
-	id = Column(Integer, primary_key=True)
-	abbrev = Column(String)
-	name = Column(String)
-	city = Column(String(255))
-	country = Column(String(255))
-	type = Column(String(32))
-	describe = Column(String(255))
-	created_date = Column(DateTime)
-	last_updated_date = Column(DateTime)
+    id = Column(Integer, primary_key=True)
+    abbrev = Column(String)
+    name = Column(String)
+    type = Column(String(32), default="stock")
+    description = Column(String(255))
+    created_date = Column(DateTime)
 
-	def __repr__(self):
-		return "<Exchange(id='%s', abbrev='%s', name='%s')>" %(
-			self.id, self.abbrev, self.name)
+    def __init__(self, abbrev, name, type, description):
+        self.abbrev = abbrev
+        self.name = name
+        self.type = type
+        self.description = description
+    def __repr__(self):
+        return "<Exchange(id='%s', abbrev='%s', name='%s')>" %(
+            self.id, self.abbrev, self.name)
+
+
+#class Fundamental(Base):
+#    """
+#    Fundamental a symbol related.
+#    create table fundamental (
+#        symbol_id integer,
+#        TODO
+#        FOREIGN KEY (symbol_id) REFERENCE symbol(id));
+#    );
+#    """
+#    __tablename__ = "fundamental"
+#
+#    symbol_id = Column(Integer)
+#    
+#    def __init__(self, symbol_id):
+#        self.symbol_id = symbol_id
+#
+#    def __repr__(self):
+#        return "<Fundamental(symbol_id=%s)>" % (self.symbol_id)
 
 
 class DailyPrice(Base):
-	"""
-	"""
-	__tablename__ = "daily_price"
+    """
+    create table daily_price (
+        id integer AUTO_INCREMENT,
+        symbol_id integer,
+        open decimal,
+        high decimal,
+        low decimal,
+        close decimal,
+        volume integer,
+        price_date date,
+        created_date datetime,
+        primary key (id),
+        FOREIGN KEY (symbol_id) REFERENCE symbol(id));
+    """
+    __tablename__ = "daily_price"
 
-	id = Column(Integer, primary_key=True)
-	exchange_id = Column(Integer, ForeignKey('exchange.id'))
-	open_price = Column(Float)
-	high_price = Column(Float)
-	low_price = Column(Float)
-	close_price = Column(Float)
-	volumn = Column(Integer)
-	price_date = Column(DateTime)
-	created_date = Column(DateTime)
-	last_updated_date = Column(DateTime)
+    id = Column(Integer, primary_key=True)
+    symbol_id = Column(Integer, ForeignKey('symbol.id'))
+    open = Column(Float)
+    high = Column(Float)
+    low = Column(Float)
+    close = Column(Float)
+    volume = Column(Integer)
+    price_date = Column(DateTime)
+    created_date = Column(DateTime)
 
-	def __repr__(self):
-		return "<DailyPrice(id='%s', price_data='%s' open_price='%s', high_price='%s', low_price='%s', close_price='%s', volumn='%s')" %(
-			self.id, self.price_date, self.open_price, self.high_price, self.low_price, self.close_price, self.volumn)
+    def __init__(self, price_date, open, high, low, close, volume):
+        self.price_date = price_date
+        self.open = open
+        self.high = high
+        self.low = low
+        self.close = close
+        self.volume = volume
 
+    def __repr__(self):
+        return "<DailyPrice(id='%s', price_data='%s' open='%s', high='%s', low='%s', close='%s', volume='%s')" %(
+            self.id, self.price_date, self.open, self.high, self.low, self.close, self.volume)
+
+class Tick(Base):
+    __tablename__ = 'tick'
+
+    id = Column(Integer, primary_key = True)
+    symbol = Column(String(12))
+    time = Column(Integer)
+    open = Column(Float)
+    high = Column(Float)
+    low = Column(Float)
+    close = Column(Float)
+    volume = Column(Integer)
+
+    def __init__(self, symbol, time, open, high, low, close, volume):
+        ''' constructor '''
+        self.symbol = symbol
+        self.time = time
+        self.open = open
+        self.high = high
+        self.low = low
+        self.close = close
+        self.volume = volume
+
+    def __repr__(self):
+        return "<Tick('%s', '%s', '%s', '%s', '%s', '%s', '%s')>" \
+           % (self.symbol, self.time, self.open, self.high, self.low, self.close, self.volume)
