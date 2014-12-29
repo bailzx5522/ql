@@ -11,6 +11,19 @@ class WebClawer(BaseClaw):
     """
     Claw quote from google finance.
     """
+
+    def read(self):
+        try:
+            req = urllib2.Request(self.url)
+            resp = urllib2.urlopen(req)
+            return resp
+        except urllib2.URLError, e:
+            print e.code
+            return None
+        except Exception as e:
+            print e
+            return None
+
     def daily_price_url(self, symbol, start, end):
         """
         get daily from yahoo
@@ -18,7 +31,8 @@ class WebClawer(BaseClaw):
 
         url = "http://ichart.finance.yahoo.com/table.csv?s=%s&a=%s&b=%s&c=%s&d=%s&e=%s&f=%s" % \
             (symbol, start[1] - 1, start[2], start[0], end[1] - 1, end[2], end[0])
-        return url
+        self.url = url
+        return self.url
 
     def get_ticks_url(self, symbol):
         """
@@ -26,10 +40,10 @@ class WebClawer(BaseClaw):
         """
         interval = 60   #unit(second)
         period = 15     #d(day), Y(year)
-        url = "http://www.google.com/finance/getprices?i=%s&p=%s&f=d,o,h,l,c,v&df=cpct&q=%s" % \
+        self.url = "http://www.google.com/finance/getprices?i=%s&p=%s&f=d,o,h,l,c,v&df=cpct&q=%s" % \
             (interval, period, symbol)
 
-        return url
+        return self.url
 
     def data2obj(self, data):
         price = []
@@ -49,7 +63,7 @@ def main():
     c = WebClawer()
     url = c.daily_price_url("006222.sz",start=(2013,12,25), end=(2014,12,29))
     #url = c.get_ticks_url("002222")
-    resp = c.send_request(url)
+    resp = c.read()
     if resp is None:
         print '----------------------------', resp
         return

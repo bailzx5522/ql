@@ -11,24 +11,13 @@ class BaseClaw(object):
     """
     def __init__(self):
         #self.provider = provider
+        self.url = None
         pass
 
-    def send_request(self, url):
-        try:
-            req = urllib2.Request(url)
-            resp = urllib2.urlopen(req)
-            return resp
-        except urllib2.URLError, e:
-            print e.code
-            return None
-        except Exception as e:
-            print e
-            return None
+    def read(self):
+        pass
 
     def generate_url(self):
-        pass
-
-    def read_files(self, files):
         pass
 
     def data2obj(self, data, obj):

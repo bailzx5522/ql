@@ -21,9 +21,10 @@ def get_session():
         session = get_maker(engine)
     return session()
 
-def inster_symbols(symbols):
+def insert_symbols(symbols):
     session = get_session()
     session.add_all(symbols)
+    session.commit()
 
 
 def get_exchange(name=None, id=None):

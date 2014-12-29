@@ -8,6 +8,7 @@ setup(
     description = ("FTD"),
     license = "BSD",
     #url = "http://packages.python.org/an_example_pypi_project",
+    #42.62.41.17:qltest123!@#
     install_requires=[
         'sqlalchemy', 'MySQL-python',
     ],

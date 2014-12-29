@@ -8,31 +8,34 @@ class Symbol(Base):
     """
     create table symbol (
         id integer AUTO_INCREMENT,
-        abbrev varchar(36),
-        name varchar(36),
-        type varchar(36),
+        abbrev varchar(32),
+        name varchar(32),
+        code varchar(32),
+        type varchar(32),
         description varchar(255),
-        created_at date,
+        created_at datetime,
         PRIMARY KEY (id));
     """
     __tablename__ = "symbol"
 
     id = Column(Integer, primary_key=True)
-    abbrev = Column(String)
-    name = Column(String)
+    abbrev = Column(String(32))
+    name = Column(String(32))
+    code = Column(String(32))
     type = Column(String(32), default="stock")
     description = Column(String(255))
     created_at = Column(DateTime)
 
-    def __init__(self, abbrev, name, type, description, ctime):
+    def __init__(self, abbrev, name, code, type, description, ctime):
         self.abbrev = abbrev
         self.name = name
+        self.code = code
         self.type = type
         self.description = description
         self.created_at = ctime
     def __repr__(self):
-        return "<Exchange(id='%s', abbrev='%s', name='%s')>" %(
-            self.id, self.abbrev, self.name)
+        return "<Exchange(id='%s', abbrev='%s', code='%s')>" %(
+            self.id, self.abbrev, self.code)
 
 
 #class Fundamental(Base):
