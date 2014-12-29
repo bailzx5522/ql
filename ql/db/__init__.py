@@ -12,7 +12,7 @@ class Symbol(Base):
         name varchar(36),
         type varchar(36),
         description varchar(255),
-        created_date date,
+        created_at date,
         PRIMARY KEY (id));
     """
     __tablename__ = "symbol"
@@ -22,13 +22,14 @@ class Symbol(Base):
     name = Column(String)
     type = Column(String(32), default="stock")
     description = Column(String(255))
-    created_date = Column(DateTime)
+    created_at = Column(DateTime)
 
-    def __init__(self, abbrev, name, type, description):
+    def __init__(self, abbrev, name, type, description, ctime):
         self.abbrev = abbrev
         self.name = name
         self.type = type
         self.description = description
+        self.created_at = ctime
     def __repr__(self):
         return "<Exchange(id='%s', abbrev='%s', name='%s')>" %(
             self.id, self.abbrev, self.name)
@@ -59,15 +60,15 @@ class DailyPrice(Base):
     create table daily_price (
         id integer AUTO_INCREMENT,
         symbol_id integer,
-        open decimal,
-        high decimal,
-        low decimal,
-        close decimal,
+        open decimal(5,2),
+        high decimal(5,2),
+        low decimal(5,2),
+        close decimal(5,2),
         volume integer,
         price_date date,
-        created_date datetime,
+        created_at datetime,
         primary key (id),
-        FOREIGN KEY (symbol_id) REFERENCE symbol(id));
+        FOREIGN KEY (symbol_id) REFERENCES symbol(id));
     """
     __tablename__ = "daily_price"
 
@@ -79,15 +80,16 @@ class DailyPrice(Base):
     close = Column(Float)
     volume = Column(Integer)
     price_date = Column(DateTime)
-    created_date = Column(DateTime)
+    created_at = Column(DateTime)
 
-    def __init__(self, price_date, open, high, low, close, volume):
+    def __init__(self, price_date, open, high, low, close, volume, ctime):
         self.price_date = price_date
         self.open = open
         self.high = high
         self.low = low
         self.close = close
         self.volume = volume
+        self.created_at = ctime
 
     def __repr__(self):
         return "<DailyPrice(id='%s', price_data='%s' open='%s', high='%s', low='%s', close='%s', volume='%s')" %(

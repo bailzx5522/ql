@@ -4,6 +4,7 @@ import urllib2
 from ql.claw.base import BaseClaw
 from ql.common.log import LOG
 from ql.db import DailyPrice, Symbol
+from ql.db import sql_api as db_api
 
 
 class WebClawer(BaseClaw):
@@ -36,17 +37,25 @@ class WebClawer(BaseClaw):
         for field in data:
             p = field.strip().split(',')
             o = DailyPrice(datetime.datetime.strptime(p[0], '%Y-%m-%d'),
-                    p[1], p[2], p[3], p[4], p[5])
+                    p[1], p[2], p[3], p[4], p[5], now)
             price.append(o)
         return price
 
+    def restore(self, prices):
+        db_api.insert_prices(prices)
+
+
 def main():
     c = WebClawer()
-    url = c.daily_price_url("002222.sz",start=(2013,12,25), end=(2014,12,25))
+    url = c.daily_price_url("006222.sz",start=(2013,12,25), end=(2014,12,29))
     #url = c.get_ticks_url("002222")
-    print url
     resp = c.send_request(url)
-    print resp
+    if resp is None:
+        print '----------------------------', resp
+        return
+    data = resp.readlines()[1:]
+    prices = c.data2obj(data)
+    c.restore(prices)
 
 if __name__ == '__main__':
     main()
