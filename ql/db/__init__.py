@@ -12,7 +12,6 @@ class Symbol(Base):
         name varchar(32),
         code varchar(32),
         type varchar(32),
-        description varchar(255),
         created_at datetime,
         PRIMARY KEY (id));
     """
@@ -23,7 +22,6 @@ class Symbol(Base):
     name = Column(String(32))
     code = Column(String(32))
     type = Column(String(32), default="stock")
-    description = Column(String(255))
     created_at = Column(DateTime)
 
     def __init__(self, abbrev, name, code, type, description, ctime):
@@ -31,11 +29,37 @@ class Symbol(Base):
         self.name = name
         self.code = code
         self.type = type
-        self.description = description
         self.created_at = ctime
+
     def __repr__(self):
         return "<Exchange(id='%s', abbrev='%s', code='%s')>" %(
             self.id, self.abbrev, self.code)
+
+
+class classify(Base):
+
+    __tablename__ = "classify"
+    
+    id = Column(Integer, primary_key=True)
+    type = Column(String(36))
+    describe = Column(String(255))
+    index = Column(Integer)
+
+    def __init__(self, type, index=0, describe=None):
+        self.type = type
+        self.describe = describe
+        self.index = index
+
+
+class SymbolClassify(Base):
+    __tablename__ = "symbol_classify_relation"
+
+    classify_id = Column(Integer, primary_key=True)
+    symbol_id = Column(Integer, primary_key=True)
+
+    def __init__(self, c_id, s_id):
+        self.classify_id = c_id
+        self.symbol_id = s_id
 
 
 #class Fundamental(Base):
@@ -85,7 +109,8 @@ class DailyPrice(Base):
     price_date = Column(DateTime)
     created_at = Column(DateTime)
 
-    def __init__(self, price_date, open, high, low, close, volume, ctime):
+    def __init__(self, symbol_id, price_date, open, high, low, close, volume, ctime):
+        self.symbol_id = symbol_id
         self.price_date = price_date
         self.open = open
         self.high = high
@@ -95,25 +120,42 @@ class DailyPrice(Base):
         self.created_at = ctime
 
     def __repr__(self):
-        return "<DailyPrice(id='%s', price_data='%s' open='%s', high='%s', low='%s', close='%s', volume='%s')" %(
-            self.id, self.price_date, self.open, self.high, self.low, self.close, self.volume)
+        return "<DailyPrice(id='%s', symbol(id)='%s', price_data='%s' open='%s',\
+                 high='%s', low='%s', close='%s', volume='%s')" % \
+                (self.id, self.symbol_id, self.price_date, self.open, self.high,
+                    self.low, self.close, self.volume)
 
 class Tick(Base):
+    """
+    create table tick (
+        id integer AUTO_INCREMENT,
+        symbol_id integer,
+        timestamp integer,
+        open decimal(5,2),
+        high decimal(5,2),
+        low decimal(5,2),
+        close decimal(5,2),
+        volume integer,
+        primary key (id),
+        FOREIGN KEY (symbol_id) REFERENCES symbol(id));
+    """
     __tablename__ = 'tick'
 
     id = Column(Integer, primary_key = True)
-    symbol = Column(String(12))
-    time = Column(Integer)
+    symbol_id = Column(Integer, ForeignKey('symbol.id'))
+    timestamp = Column(Integer)
+    price_date = Column(DateTime)
     open = Column(Float)
     high = Column(Float)
     low = Column(Float)
     close = Column(Float)
     volume = Column(Integer)
 
-    def __init__(self, symbol, time, open, high, low, close, volume):
+    def __init__(self, symbol, timestamp, price_date, open, high, low, close, volume):
         ''' constructor '''
-        self.symbol = symbol
-        self.time = time
+        self.symbol_id = symbol
+        self.timestamp = timestamp
+        self.price_date = price_date
         self.open = open
         self.high = high
         self.low = low
@@ -121,5 +163,6 @@ class Tick(Base):
         self.volume = volume
 
     def __repr__(self):
-        return "<Tick('%s', '%s', '%s', '%s', '%s', '%s', '%s')>" \
-           % (self.symbol, self.time, self.open, self.high, self.low, self.close, self.volume)
+        return "<Tick('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')>" \
+           % (self.symbol_id, self.price_date, self.timestamp, self.open,
+                self.high, self.low, self.close, self.volume)

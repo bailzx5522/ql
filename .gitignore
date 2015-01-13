@@ -4,3 +4,4 @@ dist/
 ql.egg-info/
 *.pyc
 *.log
+data/

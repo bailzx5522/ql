@@ -5,11 +5,11 @@ from threading import Thread
 
 from ql.claw.base import BaseClaw
 from ql.common.log import LOG
-from ql.db import DailyPrice, Symbol
+from ql.db import Tick, Symbol
 from ql.db import sql_api as db_api
 
 
-class WebClawer(BaseClaw):
+class tickClawer(BaseClaw):
     """
     Claw quote from google finance.
     """
@@ -17,6 +17,8 @@ class WebClawer(BaseClaw):
         self.symbols = symbols
         self.start = start
         self.end = end
+        self.tick_interval = 60     #unit(second). Google finance support 60s at least.
+        self.tick_period = "15d"    #d(day), Y(year)
 
     def read(self, url, proxy=None):
         try:
@@ -36,42 +38,52 @@ class WebClawer(BaseClaw):
             print e
             return None
 
-    def daily_price_url(self, symbol, start, end):
+    def get_ticks_url(self, symbol):
         """
-        get daily from yahoo
-        http://ichart.finance.yahoo.com/table.csv?s=002222.sz&a=11&b=25&c=2013&d=11&e=29&f=2014
+        get ticks from google
         """
-        code = symbol.code+".sz" if symbol.type=="sz_stock" else symbol.code 
-        url = "http://ichart.finance.yahoo.com/table.csv?s=%s&a=%s&b=%s&c=%s&d=%s&e=%s&f=%s" % \
-            (code, start[1] - 1, start[2], start[0], end[1] - 1, end[2], end[0])
+        # .SZ MUST BE upper
+        code = symbol.code+".SZ" if symbol.type=="sz_stock" else symbol.code
+        url = "http://www.google.com/finance/getprices?i=%s&p=%s&f=d,o,h,l,c,v&df=cpct&q=%s" % \
+            (self.tick_interval, self.tick_period, code)
         return url
 
     def data2obj(self, id, data):
-        print id
         price = []
-        now = datetime.datetime.now()
+        day_open = None
         for field in data:
             p = field.strip().split(',')
-            o = DailyPrice(id, datetime.datetime.strptime(p[0], '%Y-%m-%d'),
-                    p[1], p[2], p[3], p[4], p[5], now)
+            # db:id date o h l c v
+            # data:DATE,CLOSE,HIGH,LOW,OPEN,VOLUME
+            if 'a' in p[0]:
+                day_open = int(p[0][1:])
+                o = Tick(id, day_open, p[4], p[2], p[3], p[1], p[5])
+            else:
+                if day_open is None:
+                    print "ERROR====================================symbol_id:%s, field:%s"%(id, field)
+                    return None
+                o = Tick(id, day_open+60*int(p[0]), p[4], p[2], p[3], p[1], p[5])
             price.append(o)
         return price
 
     def restore(self, prices):
-        db_api.insert_prices(prices)
+        try:
+            db_api.insert_prices(prices)
+        except:
+            print prices[0]
 
     def _worker(self, symbol):
-        url = self.daily_price_url(symbol, self.start, self.end)
+        url = self.get_ticks_url(symbol)
         print url
         LOG.debug(url)
-        resp = self.read(url)
+        resp = self.read(url, proxy=True)
         if resp is None:
             LOG.error(resp)
             return
-        data = resp.readlines()[1:]
-        prices = self.data2obj(symbol.id, data)
-
-        self.restore(prices)
+        data = resp.readlines()
+        prices = self.data2obj(symbol.id, data[8:])
+        if prices:
+            self.restore(prices)
 
     def fetch_save_symbols(self, pools=10):
         counter = 0
@@ -97,13 +109,18 @@ class WebClawer(BaseClaw):
             # sleep for 3 second to avoid being blocked by google...
             time.sleep(5)
         
-
 def main():
     symbols = db_api.get_symbols()
-    start=(2013,12,25)
-    end=(2014,12,29)
-    c = WebClawer(symbols, start, end)
-    url = c.fetch_save_symbols()
+    #symbols = db_api.get_symbol_by_code("002020")
+    c = tickClawer(symbols)
+    c.fetch_save_symbols()
 
+    #symbols = db_api.get_symbol_by_code("002222")
+    #c = tickClawer(symbols)
+    #url = c.get_ticks_url(symbols[0])
+    #lines = c.read(url, proxy=True).readlines()
+    #prices = c.data2obj(symbols[0].id, lines[8:])
+    #c.restore(prices)
+   
 if __name__ == '__main__':
     main()
