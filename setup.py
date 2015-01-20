@@ -12,5 +12,5 @@ setup(
     install_requires=[
         'sqlalchemy', 'MySQL-python',
     ],
-    packages=['ql', 'ql/common', 'ql/db', 'ql/claw']
+    packages=['ql', 'ql/common', 'ql/db', 'ql/claw', 'ql/strategy']
 )

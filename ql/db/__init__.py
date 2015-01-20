@@ -126,19 +126,6 @@ class DailyPrice(Base):
                     self.low, self.close, self.volume)
 
 class Tick(Base):
-    """
-    create table tick (
-        id integer AUTO_INCREMENT,
-        symbol_id integer,
-        timestamp integer,
-        open decimal(5,2),
-        high decimal(5,2),
-        low decimal(5,2),
-        close decimal(5,2),
-        volume integer,
-        primary key (id),
-        FOREIGN KEY (symbol_id) REFERENCES symbol(id));
-    """
     __tablename__ = 'tick'
 
     id = Column(Integer, primary_key = True)
@@ -150,8 +137,9 @@ class Tick(Base):
     low = Column(Float)
     close = Column(Float)
     volume = Column(Integer)
+    amount = Column(Float)
 
-    def __init__(self, symbol, timestamp, price_date, open, high, low, close, volume):
+    def __init__(self, symbol, timestamp, price_date, open, high, low, close, volume, amount):
         ''' constructor '''
         self.symbol_id = symbol
         self.timestamp = timestamp
@@ -161,8 +149,9 @@ class Tick(Base):
         self.low = low
         self.close = close
         self.volume = volume
+        self.amount = amount
 
     def __repr__(self):
-        return "<Tick('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')>" \
+        return "<Tick('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')>" \
            % (self.symbol_id, self.price_date, self.timestamp, self.open,
-                self.high, self.low, self.close, self.volume)
+                self.high, self.low, self.close, self.volume, self.amount)

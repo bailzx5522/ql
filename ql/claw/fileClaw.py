@@ -2,10 +2,13 @@
 import os
 import datetime
 
+import pandas as pd
+import numpy as np
+
 from ql.claw.base import BaseClaw
 from ql.db import Symbol as db_symbol
 from ql.db import Tick as db_tick
-from ql.db import sql_api as db
+from ql.db import sql_api as db_api
 
 class fileClaw(BaseClaw):
 
@@ -13,6 +16,7 @@ class fileClaw(BaseClaw):
         self.fpath = path
         self.symbol_info = self._parse_name()
         self.split = split
+        self.db_con = db_api.get_engine()
 
     def _parse_name(self):
         self.file_name = self.fpath.split('/')[-1]
@@ -42,18 +46,24 @@ class fileClaw(BaseClaw):
     def read_tdx(self):
         if self.fpath is None:
             return None
+        col_names = ['date', 'time', 'open', 'high', 'low', 'close', 'volume', 'amount']
+        data = pd.read_csv(self.fpath, sep=self.split, index_col=False,
+                            skiprows=2, skip_footer=1, names=col_names)
+        # merge date+time = price_date
+        data['price_date'] = data.date+" "+data.time.map(lambda i: str(i) if i>999 else "0"+str(i))
+        data['price_date'] = data['price_date'].map(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d %H%M'))
+        symbol = self._get_symbol(self.symbol_info.code)
+        data['symbol_id'] = symbol.id
+        return data
 
-        ret = []
-        fd = open(self.fpath, "r")
-        lines = fd.readlines()[2:-1]
-        for line in lines:
-        #column(20120101 0935 open high low close volumn amount)
-            field = line.strip().split(self.split)
-            piece = {"date":field[0], "time":field[1], "open":field[2],
-                        "high":field[3], "low":field[4], "close":field[5],
-                        "volume":field[6], "amount":field[7]}
-            ret.append(piece)
-        return ret
+    def _unique_field(self, field, df):
+        symbol = self._get_symbol(self.symbol_info.code)
+        sql = "select %s from tick where symbol_id=%s" %(field, symbol.id)
+        o_df = pd.read_sql_query(sql, self.db_con)
+        return df[~df['price_date'].isin(o_df['price_date'])]
+
+    def _get_symbol(self, code):
+        return db_api.get_symbol_by_code(code)
 
     def read(self):
         """
@@ -95,7 +105,11 @@ class fileClaw(BaseClaw):
         return symbols
        
     def restore(self, symbols):
-        db.insert_symbols(symbols)
+        db_api.insert_symbols(symbols)
+
+    def to_sql(self, df):
+        df.to_sql("tick", self.db_con, flavor='mysql', if_exists='append', index=False)
+        
 
 def parse_files(dir):
     full_path = []
@@ -110,25 +124,17 @@ def create_symbol():
     for file in files:
         claw = fileClaw(file)
         data.append(claw.symbol_info)
-    db.insert_symbols(data)
+    db_api.insert_symbols(data)
 
 def insert_price():
     files = parse_files('/opt/ql/data/stock_data')
+    #files = ["/opt/ql/data/stock_data/SZ002312.TXT"]
     for file in files:
         claw = fileClaw(file)
-        data = claw.read_tdx()
-        symbol = db.get_symbol_by_code(claw.symbol_info.code)
-        ticks = []
-        for p in data:
-            time_str = p['date'] +" "+ p['time']
-            obj = datetime.datetime.strptime(time_str, "%Y-%m-%d %H%M")
-            tick = db_tick(symbol.id, None, obj, p['open'], p['high'],
-                            p['low'], p['close'], p['volume'])
-            ticks.append(tick)
-        db.insert_ticks(ticks)
-        print "file:%s is ok" % file
+        df = claw.read_tdx()
+        new_df = claw._unique_field("price_date", df)
+        claw.to_sql(new_df)
 
 if __name__ == "__main__":
     #create_symbol()
-    
     insert_price()
