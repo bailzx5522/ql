@@ -53,6 +53,8 @@ class fileClaw(BaseClaw):
         data['price_date'] = data.date+" "+data.time.map(lambda i: str(i) if i>999 else "0"+str(i))
         data['price_date'] = data['price_date'].map(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d %H%M'))
         symbol = self._get_symbol(self.symbol_info.code)
+        data.drop('date', axis=1, inplace=True)
+        data.drop('time', axis=1, inplace=True)
         data['symbol_id'] = symbol.id
         return data
 

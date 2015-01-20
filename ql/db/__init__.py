@@ -130,7 +130,6 @@ class Tick(Base):
 
     id = Column(Integer, primary_key = True)
     symbol_id = Column(Integer, ForeignKey('symbol.id'))
-    timestamp = Column(Integer)
     price_date = Column(DateTime)
     open = Column(Float)
     high = Column(Float)
@@ -139,10 +138,9 @@ class Tick(Base):
     volume = Column(Integer)
     amount = Column(Float)
 
-    def __init__(self, symbol, timestamp, price_date, open, high, low, close, volume, amount):
+    def __init__(self, symbol, price_date, open, high, low, close, volume, amount):
         ''' constructor '''
         self.symbol_id = symbol
-        self.timestamp = timestamp
         self.price_date = price_date
         self.open = open
         self.high = high
@@ -152,6 +150,6 @@ class Tick(Base):
         self.amount = amount
 
     def __repr__(self):
-        return "<Tick('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')>" \
-           % (self.symbol_id, self.price_date, self.timestamp, self.open,
+        return "<Tick('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')>" \
+           % (self.symbol_id, self.price_date, self.open,
                 self.high, self.low, self.close, self.volume, self.amount)
