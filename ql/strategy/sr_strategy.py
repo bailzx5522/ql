@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import math
 
+from ql.lib.plot import Plot
 from ql.strategy import Strategy
 from ql.db.sql_api import get_engine
 
@@ -14,10 +15,6 @@ class MMStrategy(Strategy):
     """
     def __init__(self, data):
         self.data = data
-
-    def _select(self, l):
-        ordered = l.order()
-        print ordered.values
 
     def get_rs(self):
         df = self.data.copy()
@@ -39,6 +36,8 @@ def main():
     df = pd.read_sql_query(sql, db_con)
     s = MMStrategy(df)
     s.get_rs()
+	#p = Plot(data)
+	#p.draw()
 
 
 if __name__ == '__main__':
