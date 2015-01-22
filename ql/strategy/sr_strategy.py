@@ -17,10 +17,16 @@ class MMStrategy(Strategy):
         self.data = data
 
     def get_rs(self):
-        df = self.data.copy()
-        grouped = df.groupby('date')
-        day_high = grouped['high'].max()
-        day_low = grouped['low'].min()
+        src = self.data['close']
+        print src
+
+
+
+
+        #df = self.data.copy()
+        #grouped = df.groupby('date')
+        #day_high = grouped['high'].max()
+        #day_low = grouped['low'].min()
         #day_high.apply(self._select, args=(day_high,))
 
         #support = self._select(day_low)
