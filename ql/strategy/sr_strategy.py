@@ -5,7 +5,6 @@ import math
 
 #from ql.lib.plot import Plot
 from ql.strategy import Strategy
-from ql.db.sql_api import get_engine
 
 
 class MMStrategy(Strategy):
@@ -13,8 +12,8 @@ class MMStrategy(Strategy):
     Max and min price in day, consist a support/resistent area.
     So sell at the resistent, and buy at the support lines.
     """
-    def __init__(self, data):
-        self.data = data
+    def __init__(self):
+        pass
 
     def get_rs(self):
         df = self.data.copy()
@@ -33,7 +32,7 @@ class MMStrategy(Strategy):
         last = 0
         ret = []
         ordered = sp.order()
-        print ordered
+        #print ordered
         for i,v in ordered.iteritems():
             if last == 0:
                 last = v
@@ -45,18 +44,18 @@ class MMStrategy(Strategy):
                 ret.append(v)
             last = v
             bias = v*0.01
-        print pd.Series(ret, dtype=float)
+        #print pd.Series(ret, dtype=float)
                 
     def generate_signal(self):
         pass
 
 
 def main():
-    sql = "select * from tick where symbol_id = 8 order by price_date desc limit 1440"
-    db_con = get_engine()
-    df = pd.read_sql_query(sql, db_con)
-    s = MMStrategy(df)
+    s = MMStrategy()
+    s.get_data_from_db("2150", "1440")
     s.get_rs()
+    s.sma()
+    print s.data
 	#p = Plot(data)
 	#p.draw()
 
