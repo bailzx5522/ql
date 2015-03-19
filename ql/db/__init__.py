@@ -21,13 +21,15 @@ class Symbol(Base):
     abbrev = Column(String(32))
     name = Column(String(32))
     code = Column(String(32))
+    volume = Column(String(32))
     type = Column(String(32), default="stock")
     created_at = Column(DateTime)
 
-    def __init__(self, abbrev, name, code, type, description, ctime):
+    def __init__(self, abbrev, name, code, volume, type, description, ctime):
         self.abbrev = abbrev
         self.name = name
         self.code = code
+        self.volume = volume
         self.type = type
         self.created_at = ctime
 

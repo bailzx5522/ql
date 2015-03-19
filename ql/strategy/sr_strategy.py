@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 import math
 
-#from ql.lib.plot import Plot
+from ql.lib.time_utils
+from ql.lib.plot import Plot
 from ql.strategy import Strategy
 
 
@@ -54,10 +55,9 @@ def main():
     s = MMStrategy()
     s.get_data_from_db("2150", "1440")
     s.get_rs()
-    s.sma()
-    print s.data
-	#p = Plot(data)
-	#p.draw()
+    print time_utils.pd_tf_convert(s.data)
+    #p = Plot(s.sma())
+    #p.draw()
 
 
 if __name__ == '__main__':
