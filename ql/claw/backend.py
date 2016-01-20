@@ -44,10 +44,8 @@ def get_stock_list():
         stocks = _query_db(sql)
     except Exception as e:
         print e
-        stocks = pd.DataFrame()
-    logging.info("Fetch from db %s stocks" % len(stocks.index))
-    if len(stocks.index) < 2000:
         stocks = stocks_clawer()
+    logging.info("Fetch from db %s stocks" % len(stocks.index))
     return stocks
 
 def all_tick_clawer(save=True):
