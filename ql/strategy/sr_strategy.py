@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import math
 
-from ql.lib.time_utils
+from ql.lib import time_utils
 from ql.lib.plot import Plot
 from ql.strategy import Strategy
 
@@ -45,19 +45,23 @@ class MMStrategy(Strategy):
                 ret.append(v)
             last = v
             bias = v*0.01
-        #print pd.Series(ret, dtype=float)
-                
+        return pd.Series(ret, index=None, dtype=float)
+
     def generate_signal(self):
         pass
 
 
 def main():
     s = MMStrategy()
-    s.get_data_from_db("2150", "1440")
-    s.get_rs()
-    print time_utils.pd_tf_convert(s.data)
-    #p = Plot(s.sma())
-    #p.draw()
+    s.get_data_from_db("2150", "288")
+    sr = s.get_rs()
+    s.sma(88)
+    s.data.set_index("price_date", inplace=True)
+    print s.data
+    import matplotlib.pyplot as plt
+    s.data['sma'].plot(use_index=False)
+    s.data['close'].plot(use_index=False)
+    plt.show()
 
 
 if __name__ == '__main__':

@@ -21,7 +21,7 @@ class Strategy(object):
 
     def sma(self, period=10, apply='close'):
         self.data['sma'] = pd.rolling_mean(self.data[apply], period, 1)
-        return self.data['sma']
+        return self.data
 
     def macd(self, p1):
         pass

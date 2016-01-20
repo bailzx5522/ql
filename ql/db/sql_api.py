@@ -9,8 +9,11 @@ from ql.db import Symbol, DailyPrice
 _MAKER = None
 _ENGINE = None
 
+db_local = "mysql://root@localhost:3306/ql"
+db_remote = "mysql://bailingzhou:bailingzhou@42.62.41.17:3306/ql"
+
 def get_engine():
-    return create_engine("mysql://root@localhost:3306/ql")
+    return create_engine(db_remote)
 
 def get_maker(engine):
     return sessionmaker(bind=engine)
