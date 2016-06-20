@@ -54,21 +54,50 @@ def all_tick_clawer(save=True):
         _save_db(df, db_ticks_table)
     return df
 
-def stock_tick_clawer(code, save=True):
+def get_tick_history(code, retry_count=3, pause=0, save=True):
+    """
+    Description:
+        历史分笔交易（每tick成交量，用于发现大单成交）
+    Params:
+        code
+    """
+    df = get_tick_data()
+    if save is True:
+        pass
+    return df
+
+def get_tick_today(code, retry_count=3, pause=0, save=True):
+    """
+    Description:
+        当日已经产生的分笔交易详情
+    Params:
+        code
+    """
+    df = get_today_ticks(code,retry_count=retry_count, pause=pause)
+    if save is True:
+        pass
+    return df
+
+#实时分笔（当前时间的1-5档挂单情况，用于跟踪实时买卖盘，撤单，交易细节）
+def stock_tick_now(code, save=True):
+    """
+    Description:
+    Params:
+    code:6位数字股票代码，或者指数代码（sh=上证指数 sz=深圳成指 hs300=沪深300指数 sz50=上证50 zxb=中小板 cyb=创业板）
+         可输入的类型：str、list、set或者pandas的Series对象
+    """
     df = ts.get_realtime_quotes(code)
     if save is True:
         _save_db(df, db_ticks_temp_table)
     return df
 
 def history_clawer(code, s=None, e=None, ktype=None, save=True):
-    logging.info("Fetch stock:%s %s-%s %s histroy data" % (code,s,e,ktype))
+    logging.info("Fetch stock:%s %s-%s %s period histroy data" % (code,s,e,ktype))
     #sh=上证指数 sz=深圳成指 hs300=沪深300指数 sz50=上证50 zxb=中小板 cyb=创业板
     index = ["sh", "sz", "hs", "sz50", "zxb", "cyb"]
 
     df = ts.get_hist_data(code, start=s, end=e, ktype=ktype)
-    print type(df)
     df["code"] = df["open"].map(lambda x:code)
-    print df.columns
     _save_db(df, db_ticks_table)
     return df
 
